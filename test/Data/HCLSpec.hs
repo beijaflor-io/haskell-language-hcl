@@ -15,21 +15,29 @@ import           Test.Hspec
 import           Text.Megaparsec        (runParser)
 
 fs' = unsafePerformIO $ do
-    print =<< getCurrentDirectory
     fs <- liftIO (getDirectoryContents "./test-fixtures")
     return $ filter ((== ".hcl") . takeExtension) fs
 
 testParser p i o = case runParser p "" i of
     Left e -> error (show e)
-    Right a -> print a >> (a `shouldBe` o)
+    Right a -> (a `shouldBe` o)
+
+testFailure fp inp = case parseHCL fp inp of
+    Right _ -> error "This should have failed"
+    _ -> True `shouldBe` True
 
 spec :: Spec
 spec = do
     describe "Hashicorp Test Suite" $ forM_ fs' $ \fp -> it fp $ do
         inp <- liftIO $ Text.readFile ("test-fixtures" </> fp)
-        case parseHCL fp inp of
-            Left e -> error (show e)
-            Right _ -> True `shouldBe` True
+        case fp of
+            "unterminated_block_comment.hcl" -> testFailure fp inp
+            "multiline_no_marker.hcl" -> testFailure fp inp
+            "multiline_bad.hcl" -> testFailure fp inp
+            "unterminated_brace.hcl" -> testFailure fp inp
+            _ -> case parseHCL fp inp of
+                    Left e -> error (show e)
+                    Right _ -> True `shouldBe` True
 
     describe "string" $
         it "parses escape sequences" $ do

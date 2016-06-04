@@ -12,6 +12,7 @@ import           Text.Megaparsec       (Dec, ParseError (..), alphaNumChar,
                                         char, eol, many, manyTill, optional,
                                         runParser, sepBy, skipMany, some,
                                         spaceChar, tab, try, (<|>))
+import qualified Text.Megaparsec       as Megaparsec (string)
 import qualified Text.Megaparsec.Lexer as Lexer
 import           Text.Megaparsec.Text  (Parser)
 
@@ -107,10 +108,19 @@ quote =
     vchar '"'
 
 string :: Parser Text
-string = do
-    quote
-    s <- manyTill Lexer.charLiteral quote
-    return $ Text.pack s
+string = try mstr <|> str
+  where
+    mstr = do
+        Megaparsec.string "<<"
+        optional (char '-')
+        Megaparsec.string "EOF"
+        eol
+        Text.pack <$> manyTill Lexer.charLiteral
+            (many spaceChar >> Megaparsec.string "EOF")
+    str = do
+        quote
+        s <- manyTill Lexer.charLiteral quote
+        return $ Text.pack s
 
 number :: Parser HCLValue
 number =
