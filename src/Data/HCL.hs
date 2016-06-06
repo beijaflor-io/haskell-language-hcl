@@ -4,23 +4,17 @@ module Data.HCL where
 import           Control.Monad
 import           Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as HashMap (fromList)
-import           Data.Monoid ((<>))
 import           Data.Scientific (Scientific)
 import           Data.Text (Text)
 import qualified Data.Text as Text
-import qualified Data.Text.IO as Text
-import           Debug.Trace
 import           Text.Megaparsec       (Dec, ParseError (..), alphaNumChar, anyChar,
-                                        between, label, char, eof, eol, many, manyTill, optional,
+                                        label, char, eof, eol, many, manyTill, optional,
                                         runParser, sepBy, sepBy1, skipMany, some,
                                         spaceChar, tab, lookAhead, try, (<|>))
 import qualified Text.Megaparsec as Megaparsec (string)
 import qualified Text.Megaparsec.Lexer as Lexer
 import           Text.Megaparsec.Text (Parser)
 
-import           Data.HCL.LexChar
-
--- type HCLObject = HashMap Text HCLValue
 type HCLList = [HCLValue]
 
 data HCLStringPart = HCLStringPlain Text
@@ -34,24 +28,21 @@ data HCLValue = HCLNumber Scientific
               | HCLList [HCLValue]
   deriving(Show, Eq)
 
--- data HCLKObject =
---     HCLKObject [Text] (HashMap Text HCLValue)
---   deriving(Show)
-
 type HCLDoc = [HCLStatement]
 data HCLStatement = HCLStatementObject HCLValue
                   | HCLStatementAssignment ([Text], HCLValue)
   deriving(Show, Eq)
 
--- parseHCL :: FilePath -> Text -> Either ParseError HCLValue
 parseHCL :: String -> Text -> Either
     (ParseError Char Dec) HCLDoc
 parseHCL = runParser hcl
 
+hcl :: Parser HCLDoc
 hcl = many $ do
     skipSpace
     topValue
 
+topValue :: Parser HCLStatement
 topValue = label "HCL - topValue" $
     HCLStatementObject <$> try object
     <|> HCLStatementAssignment <$> assignment
@@ -104,7 +95,7 @@ list = do
     skipSpace
     vs <- value `sepBy` (skipSpace >> comma >> skipSpace)
     skipSpace
-    optional comma
+    _ <- optional comma
     skipSpace
     vchar ']'
     return vs
@@ -117,12 +108,15 @@ comma =
 quote :: Parser String
 quote = Lexer.symbol skipSpace "\""
 
+bplain :: Text -> HCLValue
 bplain s = HCLString [HCLStringPlain s]
+
+binterp :: Text -> HCLValue
 binterp s = HCLString [HCLStringInterp s]
 
 stringParts :: Parser [HCLStringPart]
 stringParts = label "HCL - stringParts" $ do
-    quote
+    _ <- quote
     manyTill stringPart quote
 
 stringPart :: Parser HCLStringPart
@@ -132,7 +126,7 @@ stringPart = label "HCL - stringPart" $
 
 stringInterp :: Parser Text
 stringInterp = label "HCL - stringInterp" $ do
-    Lexer.symbol skipSpace "${"
+    _ <- Lexer.symbol skipSpace "${"
     Text.pack <$> manyTill anyChar (Megaparsec.string "}")
 
 stringPlain :: Parser Text
@@ -146,10 +140,10 @@ stringPlain = label "HCL - stringPlain" $ do
 
 stringPlainMultiline :: Parser Text
 stringPlainMultiline = label "HCL - stringPlainMultiline" $ do
-    Megaparsec.string "<<"
-    optional (char '-')
-    Megaparsec.string "EOF"
-    eol
+    _ <- Megaparsec.string "<<"
+    _ <- optional (char '-')
+    _ <- Megaparsec.string "EOF"
+    _ <- eol
     Text.pack <$> manyTill Lexer.charLiteral
         (try (skipSpace >> Megaparsec.string "EOF"))
 
@@ -157,7 +151,7 @@ string :: Parser Text
 string = label "HCL - string" $ try stringPlainMultiline <|> str
   where
     str = do
-        quote
+        _ <- quote
         s <- manyTill Lexer.charLiteral quote
         return $ Text.pack s
 
@@ -184,22 +178,3 @@ skipLineComment =
 skipBlockComment :: Parser ()
 skipBlockComment =
     Lexer.skipBlockComment "/*" "*/"
-
--- hclValueParser = do
---     ident <- hclIdentParser
---     hclWhiteParser
---     val <- hclLiteralParser
---     return (ident, val)
-
--- hclIdentParser = alphaNumChar
-
--- hclLiteralParser = return ()
-
--- spec = do
---     fs <- getDirectoryContents "./test-fixtures"
---     let fs' = filter ((== ".hcl") . takeExtension) fs
---     forM_ fs' $ \fp -> do
---         putStrLn fp
---         inp <- Text.readFile ("./test-fixtures" </> fp)
---         print $ parseHCL fp inp
---         putStrLn "--------------------------------------------------------------------------------"
