@@ -15,10 +15,12 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Data.HCL
                      , Data.HCL.Types
+                     , Data.HCL.Pretty
   build-depends:       base >=4.8 && <4.9
                      , directory >= 1.2.2.0
                      , filepath >= 1.4.0.0
                      , megaparsec >= 5
+                     , pretty
                      , scientific >= 0.3.4.6
                      , semigroups >= 0.18.1
                      , text >= 1.2.2.1
