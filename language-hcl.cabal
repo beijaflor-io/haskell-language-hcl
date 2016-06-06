@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Data.HCL
                      , Data.HCL.Types
-                     , Data.HCL.Pretty
+                     , Data.HCL.PrettyPrint
   build-depends:       base >=4.8 && <4.9
                      , directory >= 1.2.2.0
                      , filepath >= 1.4.0.0
@@ -32,6 +32,7 @@ test-suite hspec
   main-is: Spec.hs
   other-modules: Data.HCLSpec
                , SanitySpec
+               , Data.HCL.PrettyPrintSpec
   type: exitcode-stdio-1.0
   build-depends: QuickCheck
                , base
@@ -42,6 +43,7 @@ test-suite hspec
                , megaparsec
                , semigroups >= 0.18.1
                , text
+               , pretty
                , transformers >= 0.4.2.0
   hs-source-dirs: test
   default-language: Haskell2010

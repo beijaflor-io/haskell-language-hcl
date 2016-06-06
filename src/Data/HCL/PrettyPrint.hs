@@ -1,10 +1,11 @@
 {-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module Data.HCL.PrettyPrint where
 
-import Data.HashMap.Strict (toList)
+import           Data.HashMap.Strict            (toList)
 import           Data.HCL.Types
-import qualified Data.Text as Text
+import qualified Data.Text                      as Text
 import           Text.PrettyPrint
 import           Text.PrettyPrint.HughesPJClass
 
