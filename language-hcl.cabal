@@ -14,7 +14,6 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Data.HCL
-  other-modules:       Data.HCL.LexChar
   build-depends:       base >=4.8 && <4.9
                      , directory >= 1.2.2.0
                      , filepath >= 1.4.0.0
