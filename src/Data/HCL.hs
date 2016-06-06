@@ -1,37 +1,46 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Data.HCL where
+module Data.HCL
+    ( HCLList
+    , HCLDoc
+    , HCLStringPart (..)
+    , HCLStatement (..)
+    , HCLValue (..)
+    , parseHCL
+    , hcl
+    , topValue
+    , bplain
+    , binterp
+    , string
+    , stringParts
+    , stringPart
+    , stringPlain
+    , stringPlainMultiline
+    , stringInterp
+    , assignment
+    , object
+    , value
+    , ident
+    , keys
+    , key
+    , list
+    , number
+    )
+  where
 
 import           Control.Monad
-import           Data.HashMap.Strict (HashMap)
-import qualified Data.HashMap.Strict as HashMap (fromList)
-import           Data.Scientific (Scientific)
-import           Data.Text (Text)
-import qualified Data.Text as Text
-import           Text.Megaparsec       (Dec, ParseError (..), alphaNumChar, anyChar,
-                                        label, char, eof, eol, many, manyTill, optional,
-                                        runParser, sepBy, sepBy1, skipMany, some,
-                                        spaceChar, tab, lookAhead, try, (<|>))
-import qualified Text.Megaparsec as Megaparsec (string)
+import qualified Data.HashMap.Strict   as HashMap (fromList)
+import           Data.Text             (Text)
+import qualified Data.Text             as Text
+import           Text.Megaparsec       (Dec, ParseError (..), alphaNumChar,
+                                        anyChar, char, eof, eol, label,
+                                        lookAhead, many, manyTill, optional,
+                                        runParser, sepBy, sepBy1, skipMany,
+                                        some, spaceChar, tab, try, (<|>))
+import qualified Text.Megaparsec       as Megaparsec (string)
 import qualified Text.Megaparsec.Lexer as Lexer
-import           Text.Megaparsec.Text (Parser)
+import           Text.Megaparsec.Text  (Parser)
 
-type HCLList = [HCLValue]
-
-data HCLStringPart = HCLStringPlain Text
-                   | HCLStringInterp Text
-  deriving(Show, Eq)
-
-data HCLValue = HCLNumber Scientific
-              | HCLString [HCLStringPart]
-              | HCLIdent Text
-              | HCLObject [Text] (HashMap [Text] HCLValue)
-              | HCLList [HCLValue]
-  deriving(Show, Eq)
-
-type HCLDoc = [HCLStatement]
-data HCLStatement = HCLStatementObject HCLValue
-                  | HCLStatementAssignment ([Text], HCLValue)
-  deriving(Show, Eq)
+import           Data.HCL.Types
 
 parseHCL :: String -> Text -> Either
     (ParseError Char Dec) HCLDoc
