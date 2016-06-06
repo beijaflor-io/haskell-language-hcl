@@ -6,22 +6,29 @@ module Data.HCLSpec where
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Data.HCL
+import           Data.Text              (Text)
 import qualified Data.Text              as Text
 import qualified Data.Text.IO           as Text
 import           System.Directory
 import           System.FilePath
 import           System.IO.Unsafe
 import           Test.Hspec
-import           Text.Megaparsec        (runParser)
+import           Text.Megaparsec        (Parsec, Token (..), runParser)
 
+{-# NOINLINE fs' #-}
+fs' :: [FilePath]
 fs' = unsafePerformIO $ do
     fs <- liftIO (getDirectoryContents "./test-fixtures")
     return $ filter ((== ".hcl") . takeExtension) fs
 
+testParser
+    :: (Eq a, Show e, Show a, Show (Token s))
+    => Parsec e s a -> s -> a -> Expectation
 testParser p i o = case runParser p "" i of
     Left e -> error (show e)
-    Right a -> (a `shouldBe` o)
+    Right a -> a `shouldBe` o
 
+testFailure :: String -> Text -> Expectation
 testFailure fp inp = case parseHCL fp inp of
     Right _ -> error "This should have failed"
     _ -> True `shouldBe` True
@@ -70,7 +77,7 @@ spec = do
             let input = "bar\\\"baz\\n"
             testParser stringPlain input "bar\"baz\n"
 
-    describe "stringPlainMultiline" $ do
+    describe "stringPlainMultiline" $
         it "parses multiline strings" $ do
             let input = Text.unlines [ "<<EOF"
                                      , "stuff"
@@ -102,11 +109,11 @@ spec = do
                 (["foo"], HCLList [HCLNumber 1, HCLNumber 2, HCLNumber 3])
 
         it "parses multiline string assignments" $ do
-            let input = Text.unlines $ [ "bar = <<EOF"
-                                       , "hello there"
-                                       , "here"
-                                       , "EOF"
-                                       ]
+            let input = Text.unlines [ "bar = <<EOF"
+                                     , "hello there"
+                                     , "here"
+                                     , "EOF"
+                                     ]
             testParser assignment input
                 (["bar"], bplain "hello there\nhere")
 
@@ -115,6 +122,10 @@ spec = do
             testParser assignment input
                 (["foo", "bar"], HCLNumber 10)
 
+        it "fails to parse empty identifiers" $ do
+            let input = " = 10"
+            testFailure "" input
+
         it "parses assignments to objects" $ do
             let input = "foo = { name = \"john\" }"
             testParser assignment input
@@ -122,40 +133,44 @@ spec = do
 
     describe "parseHCL" $ do
         it "parses basic assignments" $ do
-            let input = Text.pack $ unlines $ ["foo = \"bar\"", "bar = \"foo\""]
+            let input = Text.unlines [ "foo = \"bar\""
+                                     , "bar = \"foo\""
+                                     ]
             testParser hcl input
-                [ (HCLStatementAssignment (["foo"], bplain "bar"))
-                , (HCLStatementAssignment (["bar"], bplain "foo"))
+                [ HCLStatementAssignment (["foo"], bplain "bar")
+                , HCLStatementAssignment (["bar"], bplain "foo")
                 ]
 
         it "parses multiline string assignments" $ do
-            let input = Text.pack $ unlines $ [ "bar = <<EOF"
-                                              , "hello there"
-                                              , "here"
-                                              , "EOF"
-                                              ]
+            let input = Text.unlines [ "bar = <<EOF"
+                                     , "hello there"
+                                     , "here"
+                                     , "EOF"
+                                     ]
             testParser hcl input
-                [ (HCLStatementAssignment (["bar"], bplain "hello there\nhere"))
+                [ HCLStatementAssignment (["bar"], bplain "hello there\nhere")
                 ]
 
         it "parses interpolated assignments" $ do
-            let input = Text.pack $ unlines $ [ "foo = \"bar\""
-                                              , "bar = \"${file(\"bing/bong.txt\")}\""
-                                              ]
+            let input = Text.unlines [ "foo = \"bar\""
+                                     , "bar = \"${file(\"bing/bong.txt\")}\""
+                                     ]
             testParser hcl input
-                [ (HCLStatementAssignment (["foo"], bplain "bar"))
-                , (HCLStatementAssignment (["bar"], binterp "file(\"bing/bong.txt\")"))
+                [ HCLStatementAssignment (["foo"], bplain "bar")
+                , HCLStatementAssignment (["bar"], binterp "file(\"bing/bong.txt\")")
                 ]
 
         it "parses complex interpolated assignments" $ do
-            let input = Text.pack $ unlines $ [ "foo = \"bar\""
-                                              , "bar = \"stuff/${file(\"bing/bong.txt\")}\""
-                                              ]
+            let input = Text.unlines [ "foo = \"bar\""
+                                     , "bar = \"stuff/${file(\"bing/bong.txt\")}\""
+                                     ]
             testParser hcl input
-                [ (HCLStatementAssignment (["foo"], bplain "bar"))
-                , (HCLStatementAssignment (["bar"], HCLString [ HCLStringPlain "stuff/"
-                                                            , HCLStringInterp "file(\"bing/bong.txt\")"
-                                                            ]))
+                [ HCLStatementAssignment (["foo"], bplain "bar")
+                , HCLStatementAssignment ( ["bar"]
+                                         , HCLString [ HCLStringPlain "stuff/"
+                                                     , HCLStringInterp "file(\"bing/bong.txt\")"
+                                                     ]
+                                         )
                 ]
 
     describe "Hashicorp Test Suite" $ forM_ fs' $ \fp -> it fp $ do
