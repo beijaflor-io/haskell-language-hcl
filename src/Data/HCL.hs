@@ -162,7 +162,7 @@ number =
     HCLNumber <$> Lexer.number
 
 ident :: Parser Text
-ident = Text.pack <$> some (alphaNumChar <|> char '_')
+ident = Text.pack <$> some (alphaNumChar <|> char '_' <|> char '-')
 
 
 skipSpace :: Parser ()

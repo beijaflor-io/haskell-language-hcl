@@ -51,6 +51,23 @@ spec = do
                                          , HCLStringInterp "hey"
                                          ]
 
+    describe "ident" $ do
+        it "parses alphanum" $ do
+            let input = "asdf"
+            testParser ident input "asdf"
+
+        it "parses dashes" $ do
+            let input = "asdf-asdf"
+            testParser ident input "asdf-asdf"
+
+        it "parses underscores" $ do
+            let input = "asdf_asdf"
+            testParser ident input "asdf_asdf"
+
+        it "stops at whitespace" $ do
+            let input = "asdf asdf"
+            testParser ident input "asdf"
+
     describe "stringPlain" $ do
         it "parses the empty string" $ do
             let input = ""
