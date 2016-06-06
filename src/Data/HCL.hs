@@ -9,9 +9,10 @@ import           Data.Scientific (Scientific)
 import           Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text
+import           Debug.Trace
 import           Text.Megaparsec       (Dec, ParseError (..), alphaNumChar, anyChar,
-                                        between, char, eof, eol, many, manyTill, optional,
-                                        runParser, sepBy, skipMany, some,
+                                        between, label, char, eof, eol, many, manyTill, optional,
+                                        runParser, sepBy, sepBy1, skipMany, some,
                                         spaceChar, tab, lookAhead, try, (<|>))
 import qualified Text.Megaparsec as Megaparsec (string)
 import qualified Text.Megaparsec.Lexer as Lexer
@@ -29,7 +30,7 @@ data HCLStringPart = HCLStringPlain Text
 data HCLValue = HCLNumber Scientific
               | HCLString [HCLStringPart]
               | HCLIdent Text
-              | HCLObject [Text] (HashMap Text HCLValue)
+              | HCLObject [Text] (HashMap [Text] HCLValue)
               | HCLList [HCLValue]
   deriving(Show, Eq)
 
@@ -39,7 +40,7 @@ data HCLValue = HCLNumber Scientific
 
 type HCLDoc = [HCLStatement]
 data HCLStatement = HCLStatementObject HCLValue
-                  | HCLStatementAssignment (Text, HCLValue)
+                  | HCLStatementAssignment ([Text], HCLValue)
   deriving(Show, Eq)
 
 -- parseHCL :: FilePath -> Text -> Either ParseError HCLValue
@@ -51,20 +52,21 @@ hcl = many $ do
     skipSpace
     topValue
 
-topValue =
+topValue = label "HCL - topValue" $
     HCLStatementObject <$> try object
     <|> HCLStatementAssignment <$> assignment
 
 value :: Parser HCLValue
-value =
+value = label "HCL - value" $
     try object
     <|> HCLList <$> list
     <|> number
     <|> HCLIdent <$> ident
     <|> HCLString <$> stringParts
+    <|> HCLString <$> (do s <- stringPlainMultiline; return [HCLStringPlain s])
 
 object :: Parser HCLValue
-object = do
+object = label "HCL - object" $ do
     ks <- keys
     skipSpace
     vchar '{'
@@ -74,14 +76,14 @@ object = do
     return $ HCLObject ks $ HashMap.fromList fs
 
 keys :: Parser [Text]
-keys = many $ do
+keys = label "HCL - keys" $ many $ do
     k <- key
     skipSpace
     return k
 
-assignment :: Parser (Text, HCLValue)
-assignment = do
-    i <- ident
+assignment :: Parser ([Text], HCLValue)
+assignment = label "HCL - assignment" $ do
+    i <- sepBy1 ident (char '.')
     skipSpace
     vchar '='
     skipSpace
@@ -119,22 +121,22 @@ bplain s = HCLString [HCLStringPlain s]
 binterp s = HCLString [HCLStringInterp s]
 
 stringParts :: Parser [HCLStringPart]
-stringParts = do
+stringParts = label "HCL - stringParts" $ do
     quote
     manyTill stringPart quote
 
 stringPart :: Parser HCLStringPart
-stringPart =
+stringPart = label "HCL - stringPart" $
     try (HCLStringInterp <$> stringInterp)
     <|> HCLStringPlain <$> stringPlain
 
 stringInterp :: Parser Text
-stringInterp = do
+stringInterp = label "HCL - stringInterp" $ do
     Lexer.symbol skipSpace "${"
     Text.pack <$> manyTill anyChar (Megaparsec.string "}")
 
 stringPlain :: Parser Text
-stringPlain = do
+stringPlain = label "HCL - stringPlain" $ do
     let end =
             try (lookAhead eof)
             <|> void (try (lookAhead (Megaparsec.string "${")))
@@ -142,16 +144,18 @@ stringPlain = do
     s <- manyTill Lexer.charLiteral end
     return $ Text.pack s
 
+stringPlainMultiline :: Parser Text
+stringPlainMultiline = label "HCL - stringPlainMultiline" $ do
+    Megaparsec.string "<<"
+    optional (char '-')
+    Megaparsec.string "EOF"
+    eol
+    Text.pack <$> manyTill Lexer.charLiteral
+        (try (skipSpace >> Megaparsec.string "EOF"))
+
 string :: Parser Text
-string = try mstr <|> str
+string = label "HCL - string" $ try stringPlainMultiline <|> str
   where
-    mstr = do
-        Megaparsec.string "<<"
-        optional (char '-')
-        Megaparsec.string "EOF"
-        eol
-        Text.pack <$> manyTill Lexer.charLiteral
-            (many spaceChar >> Megaparsec.string "EOF")
     str = do
         quote
         s <- manyTill Lexer.charLiteral quote
@@ -163,7 +167,6 @@ number =
 
 ident :: Parser Text
 ident = Text.pack <$> some (alphaNumChar <|> char '_' <|> char '-')
-
 
 skipSpace :: Parser ()
 skipSpace = skipMany $

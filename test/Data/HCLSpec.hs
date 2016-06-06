@@ -28,17 +28,6 @@ testFailure fp inp = case parseHCL fp inp of
 
 spec :: Spec
 spec = do
-    describe "Hashicorp Test Suite" $ forM_ fs' $ \fp -> it fp $ do
-        inp <- liftIO $ Text.readFile ("test-fixtures" </> fp)
-        case fp of
-            "unterminated_block_comment.hcl" -> testFailure fp inp
-            "multiline_no_marker.hcl" -> testFailure fp inp
-            "multiline_bad.hcl" -> testFailure fp inp
-            "unterminated_brace.hcl" -> testFailure fp inp
-            _ -> case parseHCL fp inp of
-                    Left e -> error (show e)
-                    Right _ -> True `shouldBe` True
-
     describe "stringParts" $ do
         it "parses normal strings" $ do
             let input = "\"something\""
@@ -81,44 +70,72 @@ spec = do
             let input = "bar\\\"baz\\n"
             testParser stringPlain input "bar\"baz\n"
 
-    describe "string" $
-        it "parses escape sequences" $ do
-            let input = "\"bar\\\"baz\\n\""
-            testParser string input "bar\"baz\n"
+    describe "stringPlainMultiline" $ do
+        it "parses multiline strings" $ do
+            let input = Text.unlines [ "<<EOF"
+                                     , "stuff"
+                                     , "here"
+                                     , "EOF"
+                                     ]
+            testParser stringPlainMultiline input "stuff\nhere"
 
     describe "assignment" $ do
         it "parses weird string assignments (escaping)" $ do
             let input = "foo = \"bar\\\"\\n\""
-            testParser assignment input ("foo", bplain "bar\"\n")
+            testParser assignment input (["foo"], bplain "bar\"\n")
 
         it "parses HashiCorp's escape.hcl" $ do
             input <- Text.readFile "./test-fixtures/escape.hcl"
-            testParser assignment input ("foo", bplain "bar\"baz\\n")
+            testParser assignment input (["foo"], bplain "bar\"baz\\n")
 
         it "parses string assignments" $ do
             let input = "foo = \"bar\""
-            testParser assignment input ("foo", bplain "bar")
+            testParser assignment input (["foo"], bplain "bar")
 
         it "parses assignments to numbers" $ do
             let input = "foo = 10"
-            testParser assignment input ("foo", HCLNumber 10)
+            testParser assignment input (["foo"], HCLNumber 10)
 
         it "parses assignments to lists" $ do
             let input = "foo = [1, 2, 3]"
             testParser assignment input
-                ("foo", HCLList [HCLNumber 1, HCLNumber 2, HCLNumber 3])
+                (["foo"], HCLList [HCLNumber 1, HCLNumber 2, HCLNumber 3])
+
+        it "parses multiline string assignments" $ do
+            let input = Text.unlines $ [ "bar = <<EOF"
+                                       , "hello there"
+                                       , "here"
+                                       , "EOF"
+                                       ]
+            testParser assignment input
+                (["bar"], bplain "hello there\nhere")
+
+        it "parses nested assignments" $ do
+            let input = "foo.bar = 10"
+            testParser assignment input
+                (["foo", "bar"], HCLNumber 10)
 
         it "parses assignments to objects" $ do
             let input = "foo = { name = \"john\" }"
             testParser assignment input
-                ("foo", HCLObject [] [("name", bplain "john")])
+                (["foo"], HCLObject [] [(["name"], bplain "john")])
 
     describe "parseHCL" $ do
         it "parses basic assignments" $ do
             let input = Text.pack $ unlines $ ["foo = \"bar\"", "bar = \"foo\""]
             testParser hcl input
-                [ (HCLStatementAssignment ("foo", bplain "bar"))
-                , (HCLStatementAssignment ("bar", bplain "foo"))
+                [ (HCLStatementAssignment (["foo"], bplain "bar"))
+                , (HCLStatementAssignment (["bar"], bplain "foo"))
+                ]
+
+        it "parses multiline string assignments" $ do
+            let input = Text.pack $ unlines $ [ "bar = <<EOF"
+                                              , "hello there"
+                                              , "here"
+                                              , "EOF"
+                                              ]
+            testParser hcl input
+                [ (HCLStatementAssignment (["bar"], bplain "hello there\nhere"))
                 ]
 
         it "parses interpolated assignments" $ do
@@ -126,8 +143,8 @@ spec = do
                                               , "bar = \"${file(\"bing/bong.txt\")}\""
                                               ]
             testParser hcl input
-                [ (HCLStatementAssignment ("foo", bplain "bar"))
-                , (HCLStatementAssignment ("bar", binterp "file(\"bing/bong.txt\")"))
+                [ (HCLStatementAssignment (["foo"], bplain "bar"))
+                , (HCLStatementAssignment (["bar"], binterp "file(\"bing/bong.txt\")"))
                 ]
 
         it "parses complex interpolated assignments" $ do
@@ -135,19 +152,19 @@ spec = do
                                               , "bar = \"stuff/${file(\"bing/bong.txt\")}\""
                                               ]
             testParser hcl input
-                [ (HCLStatementAssignment ("foo", bplain "bar"))
-                , (HCLStatementAssignment ("bar", HCLString [ HCLStringPlain "stuff/"
+                [ (HCLStatementAssignment (["foo"], bplain "bar"))
+                , (HCLStatementAssignment (["bar"], HCLString [ HCLStringPlain "stuff/"
                                                             , HCLStringInterp "file(\"bing/bong.txt\")"
                                                             ]))
                 ]
 
-
---     fs <- getDirectoryContents "./test-fixtures"
---     let fs' = filter ((== ".hcl") . takeExtension) fs
---     forM_ fs' $ \fp -> do
---         putStrLn fp
---         inp <- Text.readFile ("./test-fixtures" </> fp)
---         print $ parseHCL fp inp
---         putStrLn "--------------------------------------------------------------------------------"
-
-
+    describe "Hashicorp Test Suite" $ forM_ fs' $ \fp -> it fp $ do
+        inp <- liftIO $ Text.readFile ("test-fixtures" </> fp)
+        case fp of
+            "unterminated_block_comment.hcl" -> testFailure fp inp
+            "multiline_no_marker.hcl" -> testFailure fp inp
+            "multiline_bad.hcl" -> testFailure fp inp
+            "unterminated_brace.hcl" -> testFailure fp inp
+            _ -> case parseHCL fp inp of
+                    Left e -> error (show e)
+                    Right _ -> True `shouldBe` True
