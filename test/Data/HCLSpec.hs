@@ -39,24 +39,48 @@ spec = do
                     Left e -> error (show e)
                     Right _ -> True `shouldBe` True
 
+    describe "stringParts" $ do
+        it "parses normal strings" $ do
+            let input = "\"something\""
+            testParser stringParts input [HCLStringPlain "something"]
+
+        it "parses interpolated strings" $ do
+            let input = "\"${asdf} Hello World asdfasdf ${hey}\""
+            testParser stringParts input [ HCLStringInterp "asdf"
+                                         , HCLStringPlain " Hello World asdfasdf "
+                                         , HCLStringInterp "hey"
+                                         ]
+
+    describe "stringPlain" $ do
+        it "parses the empty string" $ do
+            let input = ""
+            testParser stringPlain input ""
+
+        it "parses charaters" $ do
+            let input = "something"
+            testParser stringPlain input "something"
+
+        it "parses escape sequences" $ do
+            let input = "bar\\\"baz\\n"
+            testParser stringPlain input "bar\"baz\n"
+
     describe "string" $
         it "parses escape sequences" $ do
             let input = "\"bar\\\"baz\\n\""
-            output <- testParser string input "bar\"baz\n"
-            print output
+            testParser string input "bar\"baz\n"
 
     describe "assignment" $ do
         it "parses weird string assignments (escaping)" $ do
             let input = "foo = \"bar\\\"\\n\""
-            testParser assignment input ("foo", HCLString "bar\"\n")
+            testParser assignment input ("foo", bplain "bar\"\n")
 
         it "parses HashiCorp's escape.hcl" $ do
             input <- Text.readFile "./test-fixtures/escape.hcl"
-            testParser assignment input ("foo", HCLString "bar\"baz\\n")
+            testParser assignment input ("foo", bplain "bar\"baz\\n")
 
         it "parses string assignments" $ do
             let input = "foo = \"bar\""
-            testParser assignment input ("foo", HCLString "bar")
+            testParser assignment input ("foo", bplain "bar")
 
         it "parses assignments to numbers" $ do
             let input = "foo = 10"
@@ -70,14 +94,36 @@ spec = do
         it "parses assignments to objects" $ do
             let input = "foo = { name = \"john\" }"
             testParser assignment input
-                ("foo", HCLObject [] [("name", HCLString "john")])
+                ("foo", HCLObject [] [("name", bplain "john")])
 
-    -- describe "parseHCL" $
-    --     it "parses basic assignments" $
-    --     let input = Text.pack $ unlines $ ["foo = \"bar\"", "bar = \"foo\""]
-    --     in case parseHCL "" input of
-    --            Left e -> error (show e)
-    --            Right a -> 10 `shouldBe` 10
+    describe "parseHCL" $ do
+        it "parses basic assignments" $ do
+            let input = Text.pack $ unlines $ ["foo = \"bar\"", "bar = \"foo\""]
+            testParser hcl input
+                [ (HCLStatementAssignment ("foo", bplain "bar"))
+                , (HCLStatementAssignment ("bar", bplain "foo"))
+                ]
+
+        it "parses interpolated assignments" $ do
+            let input = Text.pack $ unlines $ [ "foo = \"bar\""
+                                              , "bar = \"${file(\"bing/bong.txt\")}\""
+                                              ]
+            testParser hcl input
+                [ (HCLStatementAssignment ("foo", bplain "bar"))
+                , (HCLStatementAssignment ("bar", binterp "file(\"bing/bong.txt\")"))
+                ]
+
+        it "parses complex interpolated assignments" $ do
+            let input = Text.pack $ unlines $ [ "foo = \"bar\""
+                                              , "bar = \"stuff/${file(\"bing/bong.txt\")}\""
+                                              ]
+            testParser hcl input
+                [ (HCLStatementAssignment ("foo", bplain "bar"))
+                , (HCLStatementAssignment ("bar", HCLString [ HCLStringPlain "stuff/"
+                                                            , HCLStringInterp "file(\"bing/bong.txt\")"
+                                                            ]))
+                ]
+
 
 --     fs <- getDirectoryContents "./test-fixtures"
 --     let fs' = filter ((== ".hcl") . takeExtension) fs

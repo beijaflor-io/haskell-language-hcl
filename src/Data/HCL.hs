@@ -2,27 +2,32 @@
 module Data.HCL where
 
 import           Control.Monad
-import           Data.HashMap.Strict   (HashMap)
-import qualified Data.HashMap.Strict   as HashMap (fromList)
-import           Data.Scientific       (Scientific)
-import           Data.Text             (Text)
-import qualified Data.Text             as Text
-import qualified Data.Text.IO          as Text
-import           Text.Megaparsec       (Dec, ParseError (..), alphaNumChar,
-                                        char, eol, many, manyTill, optional,
+import           Data.HashMap.Strict (HashMap)
+import qualified Data.HashMap.Strict as HashMap (fromList)
+import           Data.Monoid ((<>))
+import           Data.Scientific (Scientific)
+import           Data.Text (Text)
+import qualified Data.Text as Text
+import qualified Data.Text.IO as Text
+import           Text.Megaparsec       (Dec, ParseError (..), alphaNumChar, anyChar,
+                                        between, char, eof, eol, many, manyTill, optional,
                                         runParser, sepBy, skipMany, some,
-                                        spaceChar, tab, try, (<|>))
-import qualified Text.Megaparsec       as Megaparsec (string)
+                                        spaceChar, tab, lookAhead, try, (<|>))
+import qualified Text.Megaparsec as Megaparsec (string)
 import qualified Text.Megaparsec.Lexer as Lexer
-import           Text.Megaparsec.Text  (Parser)
+import           Text.Megaparsec.Text (Parser)
 
 import           Data.HCL.LexChar
 
 -- type HCLObject = HashMap Text HCLValue
 type HCLList = [HCLValue]
 
+data HCLStringPart = HCLStringPlain Text
+                   | HCLStringInterp Text
+  deriving(Show, Eq)
+
 data HCLValue = HCLNumber Scientific
-              | HCLString Text
+              | HCLString [HCLStringPart]
               | HCLIdent Text
               | HCLObject [Text] (HashMap Text HCLValue)
               | HCLList [HCLValue]
@@ -31,17 +36,20 @@ data HCLValue = HCLNumber Scientific
 -- data HCLKObject =
 --     HCLKObject [Text] (HashMap Text HCLValue)
 --   deriving(Show)
+
 type HCLDoc = [HCLStatement]
 data HCLStatement = HCLStatementObject HCLValue
                   | HCLStatementAssignment (Text, HCLValue)
+  deriving(Show, Eq)
 
 -- parseHCL :: FilePath -> Text -> Either ParseError HCLValue
 parseHCL :: String -> Text -> Either
     (ParseError Char Dec) HCLDoc
-parseHCL = runParser $
-    many $ do
-        skipSpace
-        topValue
+parseHCL = runParser hcl
+
+hcl = many $ do
+    skipSpace
+    topValue
 
 topValue =
     HCLStatementObject <$> try object
@@ -53,7 +61,7 @@ value =
     <|> HCLList <$> list
     <|> number
     <|> HCLIdent <$> ident
-    <|> HCLString <$> string
+    <|> HCLString <$> stringParts
 
 object :: Parser HCLValue
 object = do
@@ -103,9 +111,36 @@ comma :: Parser ()
 comma =
     vchar ','
 
-quote :: Parser ()
-quote =
-    vchar '"'
+-- quote :: Parser ()
+quote :: Parser String
+quote = Lexer.symbol skipSpace "\""
+
+bplain s = HCLString [HCLStringPlain s]
+binterp s = HCLString [HCLStringInterp s]
+
+stringParts :: Parser [HCLStringPart]
+stringParts = do
+    quote
+    manyTill stringPart quote
+
+stringPart :: Parser HCLStringPart
+stringPart =
+    try (HCLStringInterp <$> stringInterp)
+    <|> HCLStringPlain <$> stringPlain
+
+stringInterp :: Parser Text
+stringInterp = do
+    Lexer.symbol skipSpace "${"
+    Text.pack <$> manyTill anyChar (Megaparsec.string "}")
+
+stringPlain :: Parser Text
+stringPlain = do
+    let end =
+            try (lookAhead eof)
+            <|> void (try (lookAhead (Megaparsec.string "${")))
+            <|> void (try (lookAhead quote))
+    s <- manyTill Lexer.charLiteral end
+    return $ Text.pack s
 
 string :: Parser Text
 string = try mstr <|> str
