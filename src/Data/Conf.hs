@@ -89,7 +89,7 @@ argument = label "argument" $
 --     let r = parseConf "" (Text.pack testFile)
 --     print r
 
--- example = Right
+-- example =
 --     [ ConfStatementExpression (Expression "worker_processes" ["1"])
 --     , ConfStatementBlock (Block
 --                            ["events"]
