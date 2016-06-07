@@ -41,6 +41,7 @@ confStatement = label "confStatement" $ do
 comment :: Parser Comment
 comment = label "comment" $ do
     _ <- string "#"
+    skipSpace
     Comment . Text.pack <$> manyTill anyChar eol
 
 block :: Parser Block
@@ -70,26 +71,19 @@ argument = label "argument" $
 -- testExpression = do
 --     let r = runParser expression "" "worker_processes 1;"
 --     print r
-
 -- testConf = do
 --     let r = runParser conf "" "worker_processes 1;\nsomething 2;"
 --     print r
-
 -- testConf2 = do
 --     let r = runParser conf "" "location / {\nalias /something;\n}"
 --     print r
-
 -- {-# NOINLINE testFile #-}
 -- testFile :: String
 -- testFile = unsafePerformIO $ readFile "/usr/local/etc/nginx/nginx.conf"
-
 -- parseConf fp inp = runParser conf fp inp
-
 -- test = do
 --     let r = parseConf "" (Text.pack testFile)
 --     print r
-
--- example =
 --     [ ConfStatementExpression (Expression "worker_processes" ["1"])
 --     , ConfStatementBlock (Block
 --                            ["events"]

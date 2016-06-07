@@ -6,6 +6,7 @@ module Data.HCLSpec where
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Data.HCL
+import           Data.HCL.TestHelper
 import           Data.Text              (Text)
 import qualified Data.Text              as Text
 import qualified Data.Text.IO           as Text
@@ -20,18 +21,6 @@ fs' :: [FilePath]
 fs' = unsafePerformIO $ do
     fs <- liftIO (getDirectoryContents "./test-fixtures")
     return $ filter ((== ".hcl") . takeExtension) fs
-
-testParser
-    :: (Eq a, Show e, Show a, Show (Token s))
-    => Parsec e s a -> s -> a -> Expectation
-testParser p i o = case runParser p "" i of
-    Left e -> error (show e)
-    Right a -> a `shouldBe` o
-
-testFailure :: String -> Text -> Expectation
-testFailure fp inp = case parseHCL fp inp of
-    Right _ -> error "This should have failed"
-    _ -> True `shouldBe` True
 
 spec :: Spec
 spec = do
