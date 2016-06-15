@@ -38,12 +38,16 @@ executable conffmt
                , megaparsec
                , language-hcl
                , pretty
+  other-modules: Data.Conf
+               , Data.Conf.PrettyPrint
 
 test-suite hspec
   main-is: Spec.hs
   other-modules: Data.HCLSpec
+               , Data.ConfSpec
                , SanitySpec
                , Data.HCL.PrettyPrintSpec
+               , Data.HCL.TestHelper
   type: exitcode-stdio-1.0
   build-depends: QuickCheck
                , base
