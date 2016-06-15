@@ -4,7 +4,6 @@ module Data.Conf
 
 import           Data.Either
 import           Data.Maybe           (catMaybes, fromMaybe)
-import           System.IO.Unsafe
 
 import           Control.Monad        (void)
 import           Data.Text            (Text)
@@ -46,7 +45,12 @@ confStatementLines :: Parser [ConfStatement]
 confStatementLines = do
     skipSpace
     s <- confStatement
-    me <- optional (eol >> return ConfStatementEmptyLine)
+    -- If we're after a comment, the parser consumed a EOL. Anywhere else we
+    -- should look for two ends of lines repeated (the end of the current
+    -- expression, plus an empty one)
+    me <- optional $ try $ case s of
+        ConfStatementComment _ -> eol >> return ConfStatementEmptyLine
+        _ -> eol >> eol >> return ConfStatementEmptyLine
     skipSpace
     return $ catMaybes [Just s, me]
 
@@ -96,14 +100,12 @@ argument = label "argument" $
 --     let r = runParser conf "" "location / {\nalias /something;\n}"
 --     print r
 -- {-# NOINLINE testFile #-}
-
-testFile :: String
-testFile = unsafePerformIO $ readFile "/usr/local/etc/nginx/nginx.conf"
-parseConf fp inp = runParser conf fp inp
-
-test = do
-    let r = parseConf "" (Text.pack testFile)
-    print r
+-- testFile :: String
+-- testFile = unsafePerformIO $ readFile "/usr/local/etc/nginx/nginx.conf"
+-- parseConf fp inp = runParser conf fp inp
+-- test = do
+--     let r = parseConf "" (Text.pack testFile)
+--     print r
     -- [ ConfStatementExpression (Expression "worker_processes" ["1"])
     -- , ConfStatementBlock (Block
     --                        ["events"]

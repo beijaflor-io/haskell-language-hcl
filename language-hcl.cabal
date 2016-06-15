@@ -34,7 +34,10 @@ executable conffmt
   main-is: ConfFmt.hs
   hs-source-dirs: src
   build-depends: base
+               , text
+               , megaparsec
                , language-hcl
+               , pretty
 
 test-suite hspec
   main-is: Spec.hs
