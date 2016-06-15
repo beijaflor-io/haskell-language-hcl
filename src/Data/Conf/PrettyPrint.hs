@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Data.Conf.PrettyPrint
+    ( module Text.PrettyPrint.HughesPJClass
+    )
   where
 
 import           Data.Conf
@@ -9,8 +11,9 @@ import           Text.PrettyPrint.HughesPJClass
 
 instance Pretty ConfStatement where
     pPrint s = case s of
+        ConfStatementEmptyLine -> text ""
         ConfStatementComment (Comment c) ->
-            "#" <+> ttext c
+            "#" <> ttext c
         ConfStatementBlock (Block ks ss) ->
             thsep ks <+> "{"
                $+$ nest 2 (pPrintList (PrettyLevel 0) ss) $+$
