@@ -16,7 +16,9 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Data.HCL
                      , Data.HCL.Types
+                     , Data.HCL.Class
                      , Data.Conf
+                     , Data.HCL.Terraform
                      , Data.HCL.PrettyPrint
   build-depends:       base >=4.8 && <5
                      , deepseq

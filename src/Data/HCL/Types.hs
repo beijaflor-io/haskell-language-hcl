@@ -22,6 +22,7 @@ data HCLValue = HCLNumber Scientific
   deriving(Generic, Show, Eq, NFData)
 
 type HCLDoc = [HCLStatement]
+
 data HCLStatement = HCLStatementObject HCLValue
                   | HCLStatementAssignment ([Text], HCLValue)
   deriving(Generic, Show, Eq, NFData)
