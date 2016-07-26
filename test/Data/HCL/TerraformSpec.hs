@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedLists   #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Data.HCL.PrettyPrintSpec where
+module Data.HCL.TerraformSpec where
 
 import           Data.HCL.Terraform
 import           Data.HCL.Types
