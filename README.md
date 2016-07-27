@@ -4,4 +4,4 @@
 programming language.
 
 ## License
-GPLv3
+Published under the GPLv3
