@@ -18,7 +18,6 @@ library
                      , Data.HCL.Types
                      , Data.HCL.Class
                      , Data.Conf
-                     , Data.HCL.Terraform
                      , Data.HCL.PrettyPrint
   build-depends:       base >=4.8 && <5
                      , deepseq
