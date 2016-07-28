@@ -1,12 +1,33 @@
+{-|
+Module: Data.HCL
+Description: Exports a @.hcl@ Megaparsec parser through 'hcl'
+Copyright: (c) Copyright Pedro Tacla Yamada 2016
+License: MIT
+Maintainer: tacla.yamada@gmail.com
+Stability: experimental
+Portability: unknown
+
+This modules contains the 'hcl' Megaparsec parser for @hcl@ files.
+
+The pretty-printer is at "Data.HCL.PrettyPrint".
+-}
 {-# LANGUAGE OverloadedStrings #-}
 module Data.HCL
-    ( HCLList
-    , HCLDoc
-    , HCLStringPart (..)
+    (
+      -- * Entry-points
+      parseHCL
+    , hcl
+    , runParser
+    , pPrintHCL
+      -- * Types
+    , HCLDoc (..)
     , HCLStatement (..)
     , HCLValue (..)
-    , parseHCL
-    , hcl
+    , HCLList (..)
+    , HCLStringPart (..)
+      -- * Pretty-printer
+    , Pretty (..)
+      -- * Support functions
     , topValue
     , bplain
     , binterp
@@ -40,16 +61,27 @@ import qualified Text.Megaparsec       as Megaparsec (string)
 import qualified Text.Megaparsec.Lexer as Lexer
 import           Text.Megaparsec.Text  (Parser)
 
+import           Data.HCL.PrettyPrint
 import           Data.HCL.Types
 
-parseHCL :: String -> Text -> Either
-    (ParseError Char Dec) HCLDoc
-parseHCL = runParser hcl
-
+-- |
+-- Parser for the HCL format
+--
+-- @
+-- let h = runParser hcl fileName fileContents
+-- @
+--
+-- See "Text.Megaparsec"
 hcl :: Parser HCLDoc
 hcl = many $ do
     skipSpace
     topValue
+
+-- |
+-- Shortcut for @runParser 'hcl'@
+parseHCL :: String -> Text -> Either
+    (ParseError Char Dec) HCLDoc
+parseHCL = runParser hcl
 
 topValue :: Parser HCLStatement
 topValue = label "HCL - topValue" $

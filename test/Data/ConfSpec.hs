@@ -2,6 +2,7 @@
 module Data.ConfSpec where
 
 import           Data.Conf
+import           Data.Conf.Internal
 import qualified Data.Text             as Text
 import qualified Data.Text.IO          as Text
 import           Test.Hspec

@@ -8,10 +8,24 @@ import           Data.Scientific     (Scientific)
 import           Data.Text           (Text)
 import           GHC.Generics        (Generic)
 
-type HCLList = [HCLValue]
+-- | The HCL document is just a list of statements
+type HCLDoc = [HCLStatement]
 
-data HCLStringPart = HCLStringPlain Text
-                   | HCLStringInterp Text
+-- | Statements may be "objects", of form:
+--
+-- @
+-- provider "aws" {
+-- # more
+-- }
+-- @
+--
+-- Or they may be assignments:
+--
+-- @
+-- a = "b"
+-- @
+data HCLStatement = HCLStatementObject HCLValue
+                  | HCLStatementAssignment ([Text], HCLValue)
   deriving(Generic, Show, Eq, NFData)
 
 data HCLValue = HCLNumber Scientific
@@ -21,8 +35,8 @@ data HCLValue = HCLNumber Scientific
               | HCLList [HCLValue]
   deriving(Generic, Show, Eq, NFData)
 
-type HCLDoc = [HCLStatement]
+type HCLList = [HCLValue]
 
-data HCLStatement = HCLStatementObject HCLValue
-                  | HCLStatementAssignment ([Text], HCLValue)
+data HCLStringPart = HCLStringPlain Text
+                   | HCLStringInterp Text
   deriving(Generic, Show, Eq, NFData)

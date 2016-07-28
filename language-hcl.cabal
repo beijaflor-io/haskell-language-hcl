@@ -1,8 +1,17 @@
 name:                language-hcl
 version:             0.1.0.0
-synopsis:            language-hcl is an HCL (Hashicorp Configuration Language)
-                   . and .conf parser for the Haskell programming language.
--- description:
+synopsis:
+    hcl and conf parsers and pretty-printers for the Haskell programming language.
+description:
+    @language-hcl@ contains HCL (Hashicorp Configuration Language) and @.conf@
+    (e.g. nginx configuration) parsers and pretty-printers for the Haskell
+    programming language.
+
+    "Data.HCL" and "Data.Conf" export all the API surface in the package.
+
+    "ConfFmt" is a @.conf@ file formatter that serves as an example; it's
+    built as @conffmt@ by the cabal configuration. You can see it's
+    source-code <https://github.com/beijaflor-io/language-hcl/src/ConfFmt.hs here>
 homepage:            https://github.com/beijaflor-io/language-hcl
 license:             MIT
 license-file:        LICENSE
@@ -15,10 +24,12 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Data.HCL
-                     , Data.HCL.Types
-                     , Data.HCL.Class
-                     , Data.Conf
                      , Data.HCL.PrettyPrint
+                     , Data.HCL.Types
+                     , Data.Conf
+                     , Data.Conf.PrettyPrint
+                     , Data.Conf.Types
+                     , Data.Conf.Internal
   build-depends:       base >=4.8 && <5
                      , deepseq
                      , directory >= 1.2.2.0
