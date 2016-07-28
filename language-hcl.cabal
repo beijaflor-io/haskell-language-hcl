@@ -4,7 +4,7 @@ synopsis:            language-hcl is an HCL (Hashicorp Configuration Language)
                    . and .conf parser for the Haskell programming language.
 -- description:
 homepage:            https://github.com/beijaflor-io/language-hcl
-license:             GPL-3
+license:             MIT
 license-file:        LICENSE
 author:              Pedro Tacla Yamada
 maintainer:          tacla.yamada@gmail.com
@@ -32,7 +32,15 @@ library
   hs-source-dirs:      src
   default-language:    Haskell2010
 
+Flag conffmt
+  description: Build the conffmt utility
+  default: False
+
 executable conffmt
+  if flag(conffmt)
+    buildable: True
+  else
+    buildable: False
   main-is: ConfFmt.hs
   hs-source-dirs: src
   build-depends: base

@@ -10,5 +10,21 @@ programming language.
 - `ConfFmt` is a `.conf` file formatter that serves as an example; it's built as
   `conffmt` by the cabal configuration
 
+## Build & Test
+```
+make build
+```
+```
+make test
+```
+```
+make all
+```
+
+## Build `conffmt`
+```
+make conffmt
+```
+
 ## License
-Published under the GPLv3
+Published under the MIT license
