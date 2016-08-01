@@ -22,6 +22,12 @@ copyright: Copyright (c) 2016 Pedro Tacla Yamada
 license: MIT
 homepage: https://github.com/beijaflor-io/language-hcl
 
+flags:
+  conffmt:
+    description: Build the conffmt utility
+    manual: false
+    default: false
+
 library:
   source-dirs: src
   exposed-modules:
@@ -91,9 +97,3 @@ benchmarks:
     - filepath
     - language-hcl
     - text
-
-flags:
-  conffmt:
-    description: Build the conffmt utility
-    manual: false
-    default: false
