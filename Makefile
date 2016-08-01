@@ -2,6 +2,7 @@ all: FORCE
 	stack setup
 	stack build
 	stack test
+	make conffmt
 
 build: FORCE
 	stack build

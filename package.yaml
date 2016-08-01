@@ -1,0 +1,99 @@
+name: language-hcl
+version: '0.1.0.0'
+synopsis: hcl and conf parsers and pretty-printers for the Haskell programming language.
+description: ! '@language-hcl@ contains HCL (Hashicorp Configuration Language) and
+  @.conf@
+
+  (e.g. nginx configuration) parsers and pretty-printers for the Haskell
+
+  programming language.
+
+  "Data.HCL" and "Data.Conf" export all the API surface in the package.
+
+  "ConfFmt" is a @.conf@ file formatter that serves as an example; it''s
+
+  built as @conffmt@ by the cabal configuration. You can see it''s
+
+  source-code <https://github.com/beijaflor-io/language-hcl/src/ConfFmt.hs here>'
+category: Data
+author: Pedro Tacla Yamada
+maintainer: tacla.yamada@gmail.com
+copyright: Copyright (c) 2016 Pedro Tacla Yamada
+license: MIT
+homepage: https://github.com/beijaflor-io/language-hcl
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - Data.HCL
+  - Data.HCL.PrettyPrint
+  - Data.HCL.Types
+  - Data.Conf
+  - Data.Conf.PrettyPrint
+  - Data.Conf.Types
+  - Data.Conf.Internal
+  other-modules: []
+  dependencies:
+  - base >=4.8 && <5
+  - deepseq
+  - directory >=1.2.2.0
+  - filepath >=1.4.0.0
+  - megaparsec >=5
+  - pretty
+  - scientific >=0.3.4.6
+  - semigroups >=0.18.1
+  - text >=1.2.2.1
+  - unordered-containers
+
+executables:
+  conffmt:
+    main: ConfFmt.hs
+    source-dirs: src
+    dependencies:
+    - base
+    - text
+    - megaparsec
+    - language-hcl
+    - pretty
+    when:
+    - condition: ! '!(flag(conffmt))'
+      buildable: false
+
+tests:
+  hspec:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+    - QuickCheck
+    - base
+    - directory
+    - filepath
+    - hspec
+    - language-hcl
+    - megaparsec
+    - hspec-megaparsec
+    - pretty
+    - semigroups >=0.18.1
+    - text
+    - transformers >=0.4.2.0
+
+benchmarks:
+  hcl-benchmark:
+    main: HCLBenchmark.hs
+    source-dirs: bench
+    ghc-options:
+    - -O2
+    - -threaded
+    dependencies:
+    - base
+    - criterion
+    - directory
+    - filepath
+    - language-hcl
+    - text
+
+flags:
+  conffmt:
+    description: Build the conffmt utility
+    manual: false
+    default: false
