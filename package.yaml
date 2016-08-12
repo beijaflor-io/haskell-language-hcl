@@ -1,32 +1,19 @@
 name: language-hcl
 version: '0.1.0.0'
 synopsis: hcl and conf parsers and pretty-printers for the Haskell programming language.
-description: ! '@language-hcl@ contains HCL (Hashicorp Configuration Language) and
-  @.conf@
+description: ! '
+  @language-hcl@ contains HCL (Hashicorp Configuration Language) parsers and
+  pretty-printers for the Haskell programming language.
 
-  (e.g. nginx configuration) parsers and pretty-printers for the Haskell
-
-  programming language.
-
-  "Data.HCL" and "Data.Conf" export all the API surface in the package.
-
-  "ConfFmt" is a @.conf@ file formatter that serves as an example; it''s
-
-  built as @conffmt@ by the cabal configuration. You can see it''s
-
-  source-code <https://github.com/beijaflor-io/language-hcl/src/ConfFmt.hs here>'
+  "Data.HCL" exports all the API surface in the package.
+'
 category: Data
 author: Pedro Tacla Yamada
 maintainer: tacla.yamada@gmail.com
 copyright: Copyright (c) 2016 Pedro Tacla Yamada
 license: MIT
-homepage: https://github.com/beijaflor-io/language-hcl
-
-flags:
-  conffmt:
-    description: Build the conffmt utility
-    manual: false
-    default: false
+github: beijaflor-io/haskell-language-hcl
+extra-source-files: ./test-fixtures/*
 
 library:
   source-dirs: src
@@ -34,10 +21,6 @@ library:
   - Data.HCL
   - Data.HCL.PrettyPrint
   - Data.HCL.Types
-  - Data.Conf
-  - Data.Conf.PrettyPrint
-  - Data.Conf.Types
-  - Data.Conf.Internal
   other-modules: []
   dependencies:
   - base >=4.8 && <5
@@ -50,20 +33,6 @@ library:
   - semigroups >=0.18.1
   - text >=1.2.2.1
   - unordered-containers
-
-executables:
-  conffmt:
-    main: ConfFmt.hs
-    source-dirs: src
-    dependencies:
-    - base
-    - text
-    - megaparsec
-    - language-hcl
-    - pretty
-    when:
-    - condition: ! '!(flag(conffmt))'
-      buildable: false
 
 tests:
   hspec:

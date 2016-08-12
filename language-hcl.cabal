@@ -1,41 +1,75 @@
--- This file has been generated from package.yaml by hpack version 0.14.1.
+-- This file has been generated from package.yaml by hpack version 0.14.0.
 --
 -- see: https://github.com/sol/hpack
 
-name:                language-hcl
-version:             0.1.0.0
-synopsis:            hcl and conf parsers and pretty-printers for the Haskell programming language.
-description:         @language-hcl@ contains HCL (Hashicorp Configuration Language) and @.conf@
-                     (e.g. nginx configuration) parsers and pretty-printers for the Haskell
-                     programming language.
-                     "Data.HCL" and "Data.Conf" export all the API surface in the package.
-                     "ConfFmt" is a @.conf@ file formatter that serves as an example; it's
-                     built as @conffmt@ by the cabal configuration. You can see it's
-                     source-code <https://github.com/beijaflor-io/language-hcl/src/ConfFmt.hs here>
-homepage:            https://github.com/beijaflor-io/language-hcl
-license:             MIT
-license-file:        LICENSE
-author:              Pedro Tacla Yamada
-maintainer:          tacla.yamada@gmail.com
-copyright:           Copyright (c) 2016 Pedro Tacla Yamada
-category:            Data
-build-type:          Simple
-cabal-version:       >= 1.10
+name:           language-hcl
+version:        0.1.0.0
+synopsis:       hcl and conf parsers and pretty-printers for the Haskell programming language.
+description:     @language-hcl@ contains HCL (Hashicorp Configuration Language) parsers and pretty-printers for the Haskell programming language.
+                "Data.HCL" exports all the API surface in the package. 
+category:       Data
+homepage:       https://github.com/beijaflor-io/haskell-language-hcl#readme
+bug-reports:    https://github.com/beijaflor-io/haskell-language-hcl/issues
+author:         Pedro Tacla Yamada
+maintainer:     tacla.yamada@gmail.com
+copyright:      Copyright (c) 2016 Pedro Tacla Yamada
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
 
-flag conffmt
-  description: Build the conffmt utility
-  manual: False
-  default: False
+extra-source-files:
+    ./test-fixtures/basic.hcl
+    ./test-fixtures/basic.json
+    ./test-fixtures/basic_int_string.hcl
+    ./test-fixtures/basic_squish.hcl
+    ./test-fixtures/decode_policy.hcl
+    ./test-fixtures/decode_policy.json
+    ./test-fixtures/decode_tf_variable.hcl
+    ./test-fixtures/decode_tf_variable.json
+    ./test-fixtures/empty.hcl
+    ./test-fixtures/escape.hcl
+    ./test-fixtures/flat.hcl
+    ./test-fixtures/float.hcl
+    ./test-fixtures/float.json
+    ./test-fixtures/interpolate_escape.hcl
+    ./test-fixtures/multiline.hcl
+    ./test-fixtures/multiline.json
+    ./test-fixtures/multiline_bad.hcl
+    ./test-fixtures/multiline_indented.hcl
+    ./test-fixtures/multiline_no_eof.hcl
+    ./test-fixtures/multiline_no_hanging_indent.hcl
+    ./test-fixtures/multiline_no_marker.hcl
+    ./test-fixtures/nested_block_comment.hcl
+    ./test-fixtures/nested_provider_bad.hcl
+    ./test-fixtures/object_list.json
+    ./test-fixtures/scientific.hcl
+    ./test-fixtures/scientific.json
+    ./test-fixtures/slice_expand.hcl
+    ./test-fixtures/structure.hcl
+    ./test-fixtures/structure.json
+    ./test-fixtures/structure2.hcl
+    ./test-fixtures/structure2.json
+    ./test-fixtures/structure_flat.json
+    ./test-fixtures/structure_flatmap.hcl
+    ./test-fixtures/structure_list.hcl
+    ./test-fixtures/structure_list.json
+    ./test-fixtures/structure_list_deep.json
+    ./test-fixtures/structure_multi.hcl
+    ./test-fixtures/structure_multi.json
+    ./test-fixtures/terraform_heroku.hcl
+    ./test-fixtures/terraform_heroku.json
+    ./test-fixtures/tfvars.hcl
+    ./test-fixtures/unterminated_block_comment.hcl
+    ./test-fixtures/unterminated_brace.hcl
+
+source-repository head
+  type: git
+  location: https://github.com/beijaflor-io/haskell-language-hcl
 
 library
-  exposed-modules:
-      Data.HCL
-      Data.HCL.PrettyPrint
-      Data.HCL.Types
-      Data.Conf
-      Data.Conf.PrettyPrint
-      Data.Conf.Types
-      Data.Conf.Internal
+  hs-source-dirs:
+      src
   build-depends:
       base >=4.8 && <5
     , deepseq
@@ -47,41 +81,17 @@ library
     , semigroups >=0.18.1
     , text >=1.2.2.1
     , unordered-containers
-  hs-source-dirs:
-      src
-  default-language: Haskell2010
-
-executable conffmt
-  main-is: ConfFmt.hs
-  hs-source-dirs:
-      src
-  build-depends:
-      base
-    , text
-    , megaparsec
-    , language-hcl
-    , pretty
-  if !(flag(conffmt))
-    buildable: False
-  other-modules:
-      Data.Conf
-      Data.Conf.Internal
-      Data.Conf.PrettyPrint
-      Data.Conf.Types
+  exposed-modules:
       Data.HCL
       Data.HCL.PrettyPrint
       Data.HCL.Types
   default-language: Haskell2010
 
 test-suite hspec
-  main-is: Spec.hs
-  other-modules:
-      Data.ConfSpec
-      Data.HCL.PrettyPrintSpec
-      Data.HCL.TestHelper
-      Data.HCLSpec
-      SanitySpec
   type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
   build-depends:
       QuickCheck
     , base
@@ -95,11 +105,19 @@ test-suite hspec
     , semigroups >=0.18.1
     , text
     , transformers >=0.4.2.0
-  hs-source-dirs:
-      test
+  other-modules:
+      Data.HCL.PrettyPrintSpec
+      Data.HCL.TestHelper
+      Data.HCLSpec
+      SanitySpec
   default-language: Haskell2010
 
 benchmark hcl-benchmark
+  type: exitcode-stdio-1.0
+  main-is: HCLBenchmark.hs
+  hs-source-dirs:
+      bench
+  ghc-options: -O2 -threaded
   build-depends:
       base
     , criterion
@@ -108,8 +126,3 @@ benchmark hcl-benchmark
     , language-hcl
     , text
   default-language: Haskell2010
-  hs-source-dirs:
-      bench
-  main-is: HCLBenchmark.hs
-  type: exitcode-stdio-1.0
-  ghc-options: -O2 -threaded
