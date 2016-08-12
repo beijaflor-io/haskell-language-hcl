@@ -1,4 +1,6 @@
 # haskell-language-hcl
+[![Hackage](https://img.shields.io/hackage/v/language-hcl.svg?maxAge=2592000)](https://hackage.haskell.org/package/language-hcl)
+- - -
 **`language-hcl`** contains HCL (Hashicorp Configuration Language) parsers and
 pretty-printers for the Haskell programming language.
 
