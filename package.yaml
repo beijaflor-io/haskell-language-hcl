@@ -1,5 +1,5 @@
 name: language-hcl
-version: '0.1.1.0'
+version: '0.1.2.0'
 synopsis: HCL parsers and pretty-printers for the Haskell programming language.
 description: ! '
   @language-hcl@ contains HCL (Hashicorp Configuration Language) parsers and
