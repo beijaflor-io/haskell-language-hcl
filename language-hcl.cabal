@@ -3,7 +3,7 @@
 -- see: https://github.com/sol/hpack
 
 name:           language-hcl
-version:        0.1.0.0
+version:        0.1.1.0
 synopsis:       hcl and conf parsers and pretty-printers for the Haskell programming language.
 description:     @language-hcl@ contains HCL (Hashicorp Configuration Language) parsers and pretty-printers for the Haskell programming language.
                 "Data.HCL" exports all the API surface in the package. 
