@@ -18,7 +18,6 @@ module Data.HCL
       parseHCL
     , hcl
     , runParser
-    , pPrintHCL
       -- * Types
     , HCLDoc (..)
     , HCLStatement (..)
@@ -49,19 +48,19 @@ module Data.HCL
   where
 
 import           Control.Monad
-import qualified Data.HashMap.Strict   as HashMap (fromList)
-import           Data.Text             (Text)
-import qualified Data.Text             as Text
-import           Text.Megaparsec       (Dec, ParseError (..), alphaNumChar,
-                                        anyChar, char, eof, eol, label,
-                                        lookAhead, many, manyTill, optional,
-                                        runParser, sepBy, sepBy1, skipMany,
-                                        some, spaceChar, tab, try, (<|>))
-import qualified Text.Megaparsec       as Megaparsec (string)
-import qualified Text.Megaparsec.Lexer as Lexer
-import           Text.Megaparsec.Text  (Parser)
+import qualified Data.HashMap.Strict       as HashMap (fromList)
+import           Data.Text                 (Text)
+import qualified Data.Text                 as Text
+import           Data.Text.Prettyprint.Doc (Pretty)
+import           Text.Megaparsec           (Dec, ParseError (..), alphaNumChar,
+                                            anyChar, char, eof, eol, label,
+                                            lookAhead, many, manyTill, optional,
+                                            runParser, sepBy, sepBy1, skipMany,
+                                            some, spaceChar, tab, try, (<|>))
+import qualified Text.Megaparsec           as Megaparsec (string)
+import qualified Text.Megaparsec.Lexer     as Lexer
+import           Text.Megaparsec.Text      (Parser)
 
-import           Data.HCL.PrettyPrint
 import           Data.HCL.Types
 
 -- |
