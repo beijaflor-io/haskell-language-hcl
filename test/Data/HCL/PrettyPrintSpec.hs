@@ -24,6 +24,11 @@ spec =
                              ["resource", "something h"]
                              [  ( ["something"], HCLString [HCLStringPlain "Here"] )
                              ,  ( ["something", "else"], HCLString [HCLStringPlain "There"] )
+                             ,  ( ["anotherthing"], HCLList [
+                                    HCLString [HCLStringPlain "Everywhere"]
+                                  , HCLString [HCLStringPlain "Everything"]
+                                  ]
+                                )
                              ]
                            )
                          ]
@@ -33,6 +38,7 @@ spec =
                               , "var = 10.0"
                               , "resource \"something h\" {"
                               , "  something.else = \"There\""
+                              , "  anotherthing = [\"Everywhere\", \"Everything\"]"
                               , "  something = \"Here\""
                               , "}"
                               ])

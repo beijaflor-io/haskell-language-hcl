@@ -67,7 +67,7 @@ instance Pretty HCLValue where
         HCLString ps   -> hsep $ pretty <$> ps
         HCLIdent t     -> pretty t
         HCLObject ks h -> vsep $ [(hsep $ prettyKey <$> ks) <+> "{"] <> prettyFields (toList h) <> ["}"]
-        HCLList vs     -> hsep $ punctuate comma (pretty <$> vs)
+        HCLList vs     -> "[" <> (hsep $ punctuate comma (pretty <$> vs)) <> "]"
 
 instance Pretty HCLStringPart where
     pretty s = case s of
