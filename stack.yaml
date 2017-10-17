@@ -1,11 +1,8 @@
-resolver: lts-9.0
+resolver: nightly-2017-10-13
 
 packages:
 - '.'
-extra-deps:
-- megaparsec-5.0.0
-- hspec-megaparsec-0.2.0
-- prettyprinter-1.1.1
+extra-deps: []
 
 flags: {}
 

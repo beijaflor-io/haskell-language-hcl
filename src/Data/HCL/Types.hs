@@ -19,6 +19,8 @@ import           Data.Text.Prettyprint.Doc (Doc, Pretty, align, annotate, comma,
 import           GHC.Generics              (Generic)
 
 
+
+
 -- | The HCL document is just a list of statements
 type HCLDoc = [HCLStatement]
 
