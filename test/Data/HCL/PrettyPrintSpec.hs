@@ -3,10 +3,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Data.HCL.PrettyPrintSpec where
 
-import           Data.HCL.PrettyPrint
 import           Data.HCL.Types
+import           Data.Text.Prettyprint.Doc               (defaultLayoutOptions,
+                                                          layoutPretty, pretty)
+import           Data.Text.Prettyprint.Doc.Render.String (renderString)
+
 import           Test.Hspec
-import           Text.PrettyPrint.HughesPJClass
 
 spec :: Spec
 spec =
@@ -20,15 +22,23 @@ spec =
                          , HCLStatementObject
                            (HCLObject
                              ["resource", "something h"]
-                             [ (["something"], HCLString [HCLStringPlain "Here"])
+                             [  ( ["something"], HCLString [HCLStringPlain "Here"] )
+                             ,  ( ["something", "else"], HCLString [HCLStringPlain "There"] )
+                             ,  ( ["anotherthing"], HCLList [
+                                    HCLString [HCLStringPlain "Everywhere"]
+                                  , HCLString [HCLStringPlain "Everything"]
+                                  ]
+                                )
                              ]
                            )
                          ]
-            prettyShow input `shouldBe`
+            renderString (layoutPretty defaultLayoutOptions $ pretty input) `shouldBe`
                 -- We use init because there's no trailing newline
                 init (unlines [ "hello.world = \"Hello World\""
                               , "var = 10.0"
                               , "resource \"something h\" {"
+                              , "  something.else = \"There\""
+                              , "  anotherthing = [\"Everywhere\", \"Everything\"]"
                               , "  something = \"Here\""
                               , "}"
                               ])
