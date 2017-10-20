@@ -19,7 +19,6 @@ library:
   source-dirs: src
   exposed-modules:
   - Data.HCL
-  - Data.HCL.PrettyPrint
   - Data.HCL.Types
   other-modules: []
   dependencies:
@@ -27,12 +26,13 @@ library:
   - deepseq
   - directory >=1.2.2.0
   - filepath >=1.4.0.0
-  - megaparsec >=5
-  - pretty
+  - megaparsec >= 6.2.0
+  - prettyprinter >= 1.1.1
   - scientific >=0.3.4.6
   - semigroups >=0.18.1
   - text >=1.2.2.1
   - unordered-containers
+  - void
 
 tests:
   hspec:
@@ -45,9 +45,9 @@ tests:
     - filepath
     - hspec
     - language-hcl
-    - megaparsec
+    - megaparsec >= 6.2.0
     - hspec-megaparsec
-    - pretty
+    - prettyprinter >= 1.1.1
     - semigroups >=0.18.1
     - text
     - transformers >=0.4.2.0

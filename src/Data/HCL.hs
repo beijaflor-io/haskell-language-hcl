@@ -18,7 +18,6 @@ module Data.HCL
       parseHCL
     , hcl
     , runParser
-    , pPrintHCL
       -- * Types
     , HCLDoc (..)
     , HCLStatement (..)
@@ -45,24 +44,31 @@ module Data.HCL
     , key
     , list
     , number
+    , Parser
     )
   where
 
 import           Control.Monad
-import qualified Data.HashMap.Strict   as HashMap (fromList)
-import           Data.Text             (Text)
-import qualified Data.Text             as Text
-import           Text.Megaparsec       (Dec, ParseError (..), alphaNumChar,
-                                        anyChar, char, eof, eol, label,
-                                        lookAhead, many, manyTill, optional,
-                                        runParser, sepBy, sepBy1, skipMany,
-                                        some, spaceChar, tab, try, (<|>))
-import qualified Text.Megaparsec       as Megaparsec (string)
-import qualified Text.Megaparsec.Lexer as Lexer
-import           Text.Megaparsec.Text  (Parser)
+import qualified Data.HashMap.Strict        as HashMap (fromList)
+import           Data.Text                  (Text)
+import qualified Data.Text                  as Text
+import           Data.Text.Prettyprint.Doc  (Pretty)
+import           Data.Void                  (Void)
+import           Text.Megaparsec            (ParseError (..), Parsec, eof,
+                                             label, lookAhead, many, manyTill,
+                                             optional, runParser, sepBy, sepBy1,
+                                             skipMany, some, try, (<|>))
+import           Text.Megaparsec.Char       (alphaNumChar, anyChar, char, eol,
+                                             spaceChar, tab)
+import qualified Text.Megaparsec.Char       as Megaparsec (string)
+import qualified Text.Megaparsec.Char.Lexer as Lexer
 
-import           Data.HCL.PrettyPrint
 import           Data.HCL.Types
+
+
+type Parser = Parsec Void Text
+
+
 
 -- |
 -- Parser for the HCL format
@@ -79,8 +85,7 @@ hcl = many $ do
 
 -- |
 -- Shortcut for @runParser 'hcl'@
-parseHCL :: String -> Text -> Either
-    (ParseError Char Dec) HCLDoc
+parseHCL :: String -> Text -> Either (ParseError Char Void) HCLDoc
 parseHCL = runParser hcl
 
 topValue :: Parser HCLStatement
@@ -146,7 +151,7 @@ comma =
     vchar ','
 
 -- quote :: Parser ()
-quote :: Parser String
+quote :: Parser Text
 quote = Lexer.symbol skipSpace "\""
 
 bplain :: Text -> HCLValue
@@ -198,7 +203,7 @@ string = label "HCL - string" $ try stringPlainMultiline <|> str
 
 number :: Parser HCLValue
 number =
-    HCLNumber <$> Lexer.number
+    HCLNumber <$> Lexer.scientific
 
 ident :: Parser Text
 ident = Text.pack <$> some (alphaNumChar <|> char '_' <|> char '-')
