@@ -44,6 +44,7 @@ data HCLStatement = HCLStatementObject HCLValue
 data HCLValue = HCLNumber Scientific
               | HCLString [HCLStringPart]
               | HCLIdent Text
+              | HCLIdentAttrs [Text]
               | HCLObject [Text] (HashMap [Text] HCLValue)
               | HCLList [HCLValue]
   deriving(Generic, Show, Eq, NFData)
@@ -65,11 +66,12 @@ instance Pretty HCLStatement where
 
 instance Pretty HCLValue where
     pretty v = case v of
-        HCLNumber n    -> pretty $ (toRealFloat n :: Double)
-        HCLString ps   -> hsep $ pretty <$> ps
-        HCLIdent t     -> pretty t
-        HCLObject ks h -> vsep $ [(hsep $ prettyKey <$> ks) <+> "{"] <> prettyFields (toList h) <> ["}"]
-        HCLList vs     -> "[" <> (hsep $ punctuate comma (pretty <$> vs)) <> "]"
+        HCLNumber n      -> pretty $ (toRealFloat n :: Double)
+        HCLString ps     -> hsep $ pretty <$> ps
+        HCLIdent t       -> pretty t
+        HCLIdentAttrs vs -> encloseSep "" "" dot (pretty <$> vs)
+        HCLObject ks h   -> vsep $ [(hsep $ prettyKey <$> ks) <+> "{"] <> prettyFields (toList h) <> ["}"]
+        HCLList vs       -> "[" <> (hsep $ punctuate comma (pretty <$> vs)) <> "]"
 
 instance Pretty HCLStringPart where
     pretty s = case s of
