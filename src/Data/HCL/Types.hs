@@ -46,6 +46,8 @@ data HCLValue = HCLNumber Scientific
               | HCLIdent Text
               | HCLObject [Text] (HashMap [Text] HCLValue)
               | HCLList [HCLValue]
+              | HCLTrue
+              | HCLFalse
   deriving(Generic, Show, Eq, NFData)
 
 type HCLList = [HCLValue]
@@ -70,6 +72,8 @@ instance Pretty HCLValue where
         HCLIdent t     -> pretty t
         HCLObject ks h -> vsep $ [(hsep $ prettyKey <$> ks) <+> "{"] <> prettyFields (toList h) <> ["}"]
         HCLList vs     -> "[" <> (hsep $ punctuate comma (pretty <$> vs)) <> "]"
+        HCLTrue        -> "true"
+        HCLFalse       -> "false"
 
 instance Pretty HCLStringPart where
     pretty s = case s of

@@ -44,6 +44,7 @@ module Data.HCL
     , key
     , list
     , number
+    , bool
     , Parser
     )
   where
@@ -97,6 +98,7 @@ value :: Parser HCLValue
 value = label "HCL - value" $
     try object
     <|> HCLList <$> list
+    <|> bool
     <|> number
     <|> HCLIdent <$> ident
     <|> HCLString <$> stringParts
@@ -204,6 +206,11 @@ string = label "HCL - string" $ try stringPlainMultiline <|> str
 number :: Parser HCLValue
 number =
     HCLNumber <$> Lexer.scientific
+
+bool :: Parser HCLValue
+bool =
+  const HCLTrue <$> Megaparsec.string "true"
+  <|> const HCLFalse <$> Megaparsec.string "false"
 
 ident :: Parser Text
 ident = Text.pack <$> some (alphaNumChar <|> char '_' <|> char '-')

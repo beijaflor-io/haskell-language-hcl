@@ -5,6 +5,7 @@ module Data.HCLSpec where
 
 import           Control.Monad
 import           Control.Monad.IO.Class
+import           Data.Either            (isLeft)
 import           Data.HCL
 import           Data.HCL.TestHelper
 import           Data.Text              (Text)
@@ -35,6 +36,11 @@ spec = do
                                          , HCLStringPlain " Hello World asdfasdf "
                                          , HCLStringInterp "hey"
                                          ]
+    
+    describe "value" $ do
+        it "parser bools as bools rather than identifiers" $ do
+            testParser value "true" HCLTrue
+            testParser value "false" HCLFalse
 
     describe "ident" $ do
         it "parses alphanum" $ do
@@ -52,6 +58,22 @@ spec = do
         it "stops at whitespace" $ do
             let input = "asdf asdf"
             testParser ident input "asdf"
+
+    describe "bool" $ do
+        it "parses `true`" $ do
+            let input = "true"
+            testParser bool input HCLTrue
+
+        it "parses `false`" $ do
+            let input = "false"
+            testParser bool input HCLFalse
+
+        it "does not parse `True`" $ do
+            isLeft (runParser bool "" "True") `shouldBe` True
+
+        it "stops at whitespace" $ do
+            let input = "true asdf"
+            testParser bool input HCLTrue
 
     describe "stringPlain" $ do
         it "parses the empty string" $ do
