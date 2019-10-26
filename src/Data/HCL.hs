@@ -98,6 +98,7 @@ value = label "HCL - value" $
     try object
     <|> HCLList <$> list
     <|> number
+    <|> HCLIdentAttrs <$> sepBy1 ident (char '.')
     <|> HCLIdent <$> ident
     <|> HCLString <$> stringParts
     <|> HCLString <$> (do s <- stringPlainMultiline; return [HCLStringPlain s])
