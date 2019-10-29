@@ -74,7 +74,7 @@ instance Pretty HCLValue where
 instance Pretty HCLStringPart where
     pretty s = case s of
         HCLStringPlain t  -> pretty t
-        HCLStringInterp t -> "#{" <> pretty t <> "}"
+        HCLStringInterp t -> "${" <> pretty t <> "}"
 
 
 prettyKey :: Text -> Doc ann
