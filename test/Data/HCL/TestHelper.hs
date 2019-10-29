@@ -18,10 +18,10 @@ import           Text.Megaparsec.Char
 --     _ -> True `shouldBe` True
 
 testParser
-    :: (Eq a, Show e, Show a, Show (Token s))
+    :: (Eq a, Show e, Show a, Stream s, ShowErrorComponent e, Show (Token s))
     => Parsec e s a -> s -> a -> Expectation
 testParser p i o = case runParser p "" i of
-    Left e  -> error (show e)
+    Left e  -> error (errorBundlePretty e)
     Right a -> a `shouldBe` o
 
 testFailure :: String -> Text -> Expectation
