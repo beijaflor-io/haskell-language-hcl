@@ -66,14 +66,14 @@ instance Pretty HCLStatement where
 instance Pretty HCLValue where
     pretty v = case v of
         HCLNumber n    -> pretty $ (toRealFloat n :: Double)
-        HCLString ps   -> hsep $ pretty <$> ps
+        HCLString ps   -> dquotes $ hsep $ pretty <$> ps
         HCLIdent t     -> pretty t
         HCLObject ks h -> vsep $ [(hsep $ prettyKey <$> ks) <+> "{"] <> prettyFields (toList h) <> ["}"]
         HCLList vs     -> "[" <> (hsep $ punctuate comma (pretty <$> vs)) <> "]"
 
 instance Pretty HCLStringPart where
     pretty s = case s of
-        HCLStringPlain t  -> dquotes $ pretty t
+        HCLStringPlain t  -> pretty t
         HCLStringInterp t -> "#{" <> pretty t <> "}"
 
 
