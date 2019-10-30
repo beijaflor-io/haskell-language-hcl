@@ -54,11 +54,11 @@ import           Data.Text                  (Text)
 import qualified Data.Text                  as Text
 import           Data.Text.Prettyprint.Doc  (Pretty)
 import           Data.Void                  (Void)
-import           Text.Megaparsec            (ParseError (..), Parsec, eof,
+import           Text.Megaparsec            (ParseErrorBundle (..), Parsec, anySingle, eof,
                                              label, lookAhead, many, manyTill,
                                              optional, runParser, sepBy, sepBy1,
                                              skipMany, some, try, (<|>))
-import           Text.Megaparsec.Char       (alphaNumChar, anyChar, char, eol,
+import           Text.Megaparsec.Char       (alphaNumChar, char, eol,
                                              spaceChar, tab)
 import qualified Text.Megaparsec.Char       as Megaparsec (string)
 import qualified Text.Megaparsec.Char.Lexer as Lexer
@@ -85,7 +85,7 @@ hcl = many $ do
 
 -- |
 -- Shortcut for @runParser 'hcl'@
-parseHCL :: String -> Text -> Either (ParseError Char Void) HCLDoc
+parseHCL :: String -> Text -> Either (ParseErrorBundle Text Void) HCLDoc
 parseHCL = runParser hcl
 
 topValue :: Parser HCLStatement
@@ -173,7 +173,7 @@ stringPart = label "HCL - stringPart" $
 stringInterp :: Parser Text
 stringInterp = label "HCL - stringInterp" $ do
     _ <- Lexer.symbol skipSpace "${"
-    Text.pack <$> manyTill anyChar (Megaparsec.string "}")
+    Text.pack <$> manyTill anySingle (Megaparsec.string "}")
 
 stringPlain :: Parser Text
 stringPlain = label "HCL - stringPlain" $ do
